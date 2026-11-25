@@ -56,6 +56,25 @@ ENTRY = (
 MAX_CHARS = 220
 
 
+def check_sentence_shape(text):
+    """Refuse a sentence whose shape breaks the one-sentence rule.
+
+    The brief wants a single sentence, not merely any text that
+    passes the length gate: not only white space, no leading or
+    trailing blank, no line break smuggled in, and exactly one
+    period at the end. Each rejection names the rule it broke.
+    """
+    if not text.strip():
+        raise ValueError("entry must not be only white space")
+    if text != text.strip():
+        raise ValueError("entry must not have leading or trailing white space")
+    if "\n" in text or "\r" in text:
+        raise ValueError("entry must be a single sentence, got a line break inside")
+    if text.count(".") != 1 or not text.endswith("."):
+        raise ValueError("entry must be exactly one sentence ending in a period")
+    return text
+
+
 def check_sentence(text):
     """Refuse anything that is not one clean sentence of 1 to 220 chars.
 
@@ -70,9 +89,9 @@ def check_sentence(text):
       Unicode code points, exactly as the sealed gate counts them.
       A byte count would wrongly reject a short sentence that
       happens to hold non-ASCII letters.
-    - Then the shape rules. Not only white space, no leading or
-      trailing blank, no line break smuggled in: the brief wants a
-      single sentence, not merely any text that passes the gate.
+    - Then the shape rules in check_sentence_shape: not only white
+      space, no leading or trailing blank, no line break smuggled
+      in, exactly one period at the end.
 
     Each rejection names the rule it broke, so a bad sentence fails
     here with a reason instead of silently reaching the judge.
@@ -84,15 +103,7 @@ def check_sentence(text):
         raise ValueError(
             "entry must be 1-%d characters, got %d" % (MAX_CHARS, len(text))
         )
-    if not text.strip():
-        raise ValueError("entry must not be only white space")
-    if text != text.strip():
-        raise ValueError("entry must not have leading or trailing white space")
-    if "\n" in text or "\r" in text:
-        raise ValueError("entry must be a single sentence, got a line break inside")
-    if text.count(".") != 1 or not text.endswith("."):
-        raise ValueError("entry must be exactly one sentence ending in a period")
-    return text
+    return check_sentence_shape(text)
 
 
 def output_dir():
