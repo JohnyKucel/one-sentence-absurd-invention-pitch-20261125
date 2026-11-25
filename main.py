@@ -139,7 +139,30 @@ def write_entry():
     return entry_path
 
 
-def main():
+def check_only():
+    """Run the gate and report the verdict without writing a file.
+
+    --check answers "would this entry pass?" for a dry run: the
+    sentence is gated exactly as write_entry gates it, then the
+    verdict is printed. Nothing is written to disk, so the mode is
+    safe to run against a live output directory.
+    """
+    sentence = check_sentence(ENTRY)
+    print(
+        "check passed: one sentence, %d chars, ends in a period"
+        % len(sentence)
+    )
+    return 0
+
+
+def main(argv=None):
+    args = list(sys.argv[1:] if argv is None else argv)
+    if "--check" in args:
+        try:
+            return check_only()
+        except (ValueError, TypeError, OSError) as exc:
+            print("check failed: %s" % exc, file=sys.stderr)
+            return 1
     try:
         path = write_entry()
     except (ValueError, TypeError, OSError) as exc:
